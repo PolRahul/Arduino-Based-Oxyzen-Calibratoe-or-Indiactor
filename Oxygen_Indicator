@@ -1,0 +1,139 @@
+/*
+  Analog Input
+
+  Demonstrates analog input by reading an analog sensor on analog pin 0 and
+  turning on and off a light emitting diode(LED) connected to digital pin 13.
+  The amount of time the LED will be on and off depends on the value obtained
+  by analogRead().
+
+  The circuit:
+  - potentiometer
+    center pin of the potentiometer to the analog input 0
+    one side pin (either one) to ground
+    the other side pin to +5V
+  - LED
+    anode (long leg) attached to digital output 13
+    cathode (short leg) attached to ground
+
+  - Note: because most Arduinos have a built-in LED attached to pin 13 on the
+    board, the LED is optional.
+
+  created by David Cuartielles
+  modified 30 Aug 2011
+  By Tom Igoe
+
+  This example code is in the public domain.
+
+  http://www.arduino.cc/en/Tutorial/AnalogInput
+*/
+// include the library code:
+#include <LiquidCrystal.h>
+
+// initialize the library by associating any needed LCD interface pin
+// with the arduino pin number it is connected to
+const int rs = 2, en = 3, d4 = 4, d5 = 5, d6 = 6, d7 = 7;
+LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+int O2_sensorPin = A0;    // select the input pin for the potentiometer
+int Pre_sensorPin = A1;    // select the input pin for the potentiometer
+const int buttonPin = 13;     // the number of the pushbutton pin
+int ledPin = 01;      // select the pin for the LED
+
+
+int O2_sensorValue = 0;  // variable to store the value coming from the sensor
+int O2_sensorValue_Adj=0;
+int Pre_SensorValue =0;
+int sensorMax = 12;
+int buttonState = 0;         // variable for reading the pushbutton status
+
+void setup() {
+  
+  // declare the ledPin as an OUTPUT:
+//  pinMode(ledPin, OUTPUT);
+  // initialize the pushbutton pin as an input:
+  pinMode(buttonPin, INPUT);
+  lcd.begin(16, 2);
+  // Print a message to the LCD.
+  lcd.setCursor(0,0);
+  lcd.print("It's O2 Analyzer");
+  delay(2000);
+  //  lcd.noDisplay();
+//  lcd.setCursor(0,0);
+//  lcd.print(" Oxyzen Analyzer ");
+  delay(200);
+ // Serial.begin(9600);
+  
+}
+
+void loop() {
+
+while(1)
+{
+
+  buttonState = digitalRead(buttonPin);
+  
+   
+  if(buttonState==LOW)
+  {
+  
+  O2_sensorValue = 0;
+  analogReference(EXTERNAL);  
+  O2_sensorValue = analogRead(O2_sensorPin);
+  O2_sensorValue_Adj = O2_sensorValue * 0.32;
+ // Serial.print(analogRead(O2_sensorPin)); 
+ // Serial.print("\n");
+  
+  lcd.setCursor(0,0);
+  lcd.print("Mode: Oxygen    ");
+    
+  lcd.setCursor(5,1);
+ /* 
+ lcd.print(O2_sensorValue_Adj ); // uncomment this for calibration
+ lcd.print("mv");
+ lcd.print(" ");
+ */
+  
+  if(O2_sensorValue_Adj <4)
+    lcd.print("  0");
+  if(O2_sensorValue_Adj > 4 && O2_sensorValue_Adj <=12 )
+    lcd.print(" 20");
+  if(O2_sensorValue_Adj <= 46 && O2_sensorValue_Adj > 12)
+    lcd.print(O2_sensorValue_Adj *2.174);
+  if(O2_sensorValue_Adj <= 100 &&O2_sensorValue_Adj > 46)
+    lcd.print(100); 
+  if(O2_sensorValue_Adj > 100 )
+    lcd.print(00);  
+   lcd.print("%    ");
+  }
+
+  if(buttonState==HIGH)
+  {
+  lcd.setCursor(0,0);
+  lcd.print("Mode: Pressure  ");
+  
+  analogReference(EXTERNAL);
+  Pre_SensorValue = analogRead(Pre_sensorPin);
+  delay(100);
+  Pre_SensorValue = (analogRead(Pre_sensorPin)+Pre_SensorValue)/2;
+  delay(100);
+  Pre_SensorValue = (analogRead(Pre_sensorPin)+Pre_SensorValue)/2;
+  lcd.setCursor(5,1);
+
+ /* 
+    lcd.print((Pre_SensorValue)*0.00485); // uncomment this for calibration 
+    lcd.print("v");
+    lcd.print(" ");
+ */  
+  if (((Pre_SensorValue)*0.00485)<4.2)
+  lcd.print(((Pre_SensorValue)*0.00485)*66.66);
+  else 
+  lcd.print(00);
+  
+  
+  lcd.print(" Lbs   ");
+  }
+  delay(3000);
+
+  }
+  
+}
